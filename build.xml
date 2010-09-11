@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="jar" name="Create Runnable Jar for Project Fast_LdapSearch">
+
+	<property name="JAR.FILE" value="Fast_LdapSearch.jar"/>
+	<property name="bin" value="bin/ "/>
+	<property name="src" value="src/" />
+	
+	<target name="clean">
+		<delete dir="${bin}" />
+		<delete>
+			<fileset dir="./">
+			    <include name="${JAR.FILE}"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="build" depends="clean">
+		<mkdir dir="${bin}" />
+		<unjar src="./libs/commons-cli-1.2.jar" dest="${bin}" />
+		<unjar src="./libs/commons-configuration-1.6.jar" dest="${bin}" />
+		<unjar src="./libs/log4j-1.2.16.jar" dest="${bin}" />
+		<javac srcdir="${src}"
+         destdir="${bin}"
+         classpath="${src}"
+		/>
+	</target>
+	
+    <target name="jar" depends="build">
+        <jar destfile="${JAR.FILE}" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="com.seanmadden.fast.ldap.LdapTest"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${bin}"/>
+        </jar>
+    </target>
+</project>

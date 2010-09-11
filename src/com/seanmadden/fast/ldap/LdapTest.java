@@ -49,7 +49,7 @@ public class LdapTest {
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, "ldap://finance.rit.edu");
 		env.put(Context.SECURITY_PRINCIPAL, "cn=spmfa,OU=Support,OU=Systems & Technology,OU=Finance & Administration,DC=finance,DC=rit,DC=edu");
-		env.put(Context.SECURITY_CREDENTIALS, "Noctournicus2");
+		env.put(Context.SECURITY_CREDENTIALS, "");
 		
 		try {
 			DirContext ctx = new InitialDirContext(env);

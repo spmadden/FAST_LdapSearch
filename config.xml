@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+	<Profiles>
+		<Profile name="Finance">
+			<LdapAuthString>cn=spmfa,OU=Support,OU=Systems &amp; Technology,OU=Finance &amp; Administration,DC=finance,DC=rit,DC=edu</LdapAuthString>
+			<LdapServerString>ldap://finance.rit.edu</LdapServerString>
+			<LdapGroupsLocation>OU=Groups,DC=finance,DC=rit,DC=edu</LdapGroupsLocation>
+		</Profile>
+	</Profiles>
+</configuration>
