@@ -2,7 +2,7 @@
 <project default="jar" name="Create Runnable Jar for Project Fast_LdapSearch">
 
 	<property name="JAR.FILE" value="Fast_LdapSearch.jar"/>
-	<property name="bin" value="bin/ "/>
+	<property name="bin" value="bin/"/>
 	<property name="src" value="src/" />
 	
 	<target name="clean">
@@ -18,6 +18,9 @@
 		<mkdir dir="${bin}" />
 		<unjar src="./libs/commons-cli-1.2.jar" dest="${bin}" />
 		<unjar src="./libs/commons-configuration-1.6.jar" dest="${bin}" />
+		<unjar src="./libs/commons-collections-3.2.1.jar" dest="${bin}" />
+		<unjar src="./libs/commons-lang-2.5.jar" dest="${bin}" />
+		<unjar src="./libs/commons-logging-1.1.1.jar" dest="${bin}" />
 		<unjar src="./libs/log4j-1.2.16.jar" dest="${bin}" />
 		<javac srcdir="${src}"
          destdir="${bin}"

@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
-	<Profiles>
-		<Profile name="Finance">
-			<LdapAuthString>cn=spmfa,OU=Support,OU=Systems &amp; Technology,OU=Finance &amp; Administration,DC=finance,DC=rit,DC=edu</LdapAuthString>
-			<LdapServerString>ldap://finance.rit.edu</LdapServerString>
-			<LdapGroupsLocation>OU=Groups,DC=finance,DC=rit,DC=edu</LdapGroupsLocation>
-		</Profile>
-	</Profiles>
+<Profiles>
+<Profile name="Finance spmfa">
+<LdapAuthString>cn=spmfa,OU=Support,OU=Systems &amp; Technology,OU=Finance &amp; Administration,DC=finance,DC=rit,DC=edu</LdapAuthString>
+<LdapServerString>ldap://finance.rit.edu</LdapServerString>
+<LdapGroupsLocation>OU=Groups,DC=finance,DC=rit,DC=edu</LdapGroupsLocation>
+</Profile>
+<Profile name="rit spm2732">
+<LdapAuthString>uid=spm2732,ou=People,DC=rit,DC=edu</LdapAuthString>
+<LdapServerString>ldap://ldap.rit.edu</LdapServerString>
+<LdapGroupsLocation>OU=Groups,DC=rit,DC=edu</LdapGroupsLocation>
+</Profile>
+</Profiles>
 </configuration>

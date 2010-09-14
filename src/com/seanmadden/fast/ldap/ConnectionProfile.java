@@ -46,9 +46,15 @@ public class ConnectionProfile {
 	 * OU=Groups,DC=finance,DC=rit,DC=edu
 	 */
 	private String ldapGroupsString = "";
+	
+	/**
+	 * Finance LDAP Server
+	 */
+	private String name = "";
 
-	public ConnectionProfile(String ldapServerString, String ldapAuthString,
+	public ConnectionProfile(String name, String ldapServerString, String ldapAuthString,
 			String ldapGroupsString) {
+		this.name = name;
 		this.ldapServerString = ldapServerString;
 		this.ldapAuthString = ldapAuthString;
 		this.ldapGroupsString = ldapGroupsString;
@@ -112,6 +118,24 @@ public class ConnectionProfile {
 	}
 
 	/**
+	 * Returns the name
+	 *
+	 * @return name the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Sets the name
+	 *
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
 	 * [Place method description here]
 	 *
 	 * @see java.lang.Object#toString()
@@ -119,15 +143,9 @@ public class ConnectionProfile {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ConnectionProfile [ldapServerString=");
-		builder.append(ldapServerString);
-		builder.append(", ldapAuthString=");
-		builder.append(ldapAuthString);
-		builder.append(", ldapGroupsString=");
-		builder.append(ldapGroupsString);
-		builder.append("]");
-		return builder.toString();
+		return this.name;
 	}
+
+
 
 }

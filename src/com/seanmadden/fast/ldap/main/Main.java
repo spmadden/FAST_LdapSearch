@@ -28,10 +28,15 @@ package com.seanmadden.fast.ldap.main;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Vector;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
+
+import com.seanmadden.fast.ldap.ConnectionProfile;
+import com.seanmadden.fast.ldap.gui.PasswordPrompter;
+import com.seanmadden.fast.ldap.gui.ProfileSelector;
 
 /**
  * [Insert class description here]
@@ -89,16 +94,57 @@ public class Main {
 			// Load the configuration file
 			if (configurationFile.exists()) {
 				config.load(configurationFile);
-			}else{
+			} else {
 				log.error("Cannot find config file");
 			}
 
-			List profiles = config.configurationsAt("Profiles");
-			for(Object p : profiles){
+			/*
+			 * Convert the profiles into memory
+			 */
+			Vector<ConnectionProfile> profs = new Vector<ConnectionProfile>();
+			List<?> profList = config.configurationAt("Profiles")
+					.configurationsAt("Profile");
+			for (Object p : profList) {
 				SubnodeConfiguration profile = (SubnodeConfiguration) p;
-				System.out.println(profile.getString("Profile[@name]"));
+				String name = profile.getString("[@name]");
+				String auth = profile.getString("LdapAuthString");
+				String server = profile.getString("LdapServerString");
+				String group = profile.getString("LdapGroupsLocation");
+				ConnectionProfile prof = new ConnectionProfile(name, server,
+						auth, group);
+				profs.add(prof);
 			}
 
+			/*
+			 * Deploy the profile selector, to select a profile
+			 */
+			ProfileSelector profSel = new ProfileSelector(profs);
+			ConnectionProfile prof = profSel.getSelection();
+			if (prof == null) {
+				return;
+			}
+			log.info("User selected " + prof);
+
+			/*
+			 * Empty the profiles and load a clean copy - then save it back to
+			 * the file
+			 */
+			config.clearTree("Profiles");
+			for (ConnectionProfile p : profSel.getProfiles()) {
+				config.addProperty("Profiles.Profile(-1)[@name]", p.getName());
+				config.addProperty("Profiles.Profile.LdapAuthString",
+						p.getLdapAuthString());
+				config.addProperty("Profiles.Profile.LdapServerString",
+						p.getLdapServerString());
+				config.addProperty("Profiles.Profile.LdapGroupsLocation",
+						p.getLdapGroupsString());
+			}
+			config.save(configurationFile);
+			
+			String password = PasswordPrompter.promptForPassword("Password?");
+			System.out.println(password);
+			
+			
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);
