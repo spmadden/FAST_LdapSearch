@@ -8,6 +8,8 @@ import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
@@ -41,7 +43,14 @@ public class LdapInterface {
 		
 		try {
 			DirContext ctx = new InitialDirContext(env);
-			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
+			LdapCtx user = (LdapCtx)ctx.lookup(this.auth);
+			Attributes userAtt = user.getAttributes("");
+			NamingEnumeration<? extends Attribute> userAtts = userAtt.getAll();
+			while(userAtts.hasMore()){
+				Attribute next = userAtts.next();
+				System.out.println(next);
+			}
+/*			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
 			NamingEnumeration<NameClassPair> elems = e.list("");
 			while(elems.hasMore()){
 				NameClassPair ncp = elems.next();
@@ -58,6 +67,7 @@ public class LdapInterface {
 				System.out.println();
 				
 			}
+			*/
 		} catch (NamingException e) {
 			if(e.getRootCause() instanceof UnknownHostException){
 				log.fatal("Cannot connect to server.");
