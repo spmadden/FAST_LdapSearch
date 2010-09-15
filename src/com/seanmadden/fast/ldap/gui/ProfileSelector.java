@@ -27,9 +27,13 @@ package com.seanmadden.fast.ldap.gui;
 
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -45,7 +49,7 @@ import com.seanmadden.fast.ldap.ConnectionProfile;
  * @author Sean P Madden
  */
 public class ProfileSelector extends JFrame implements ActionListener,
-		ListSelectionListener {
+		ListSelectionListener, MouseListener {
 
 	/**
 	 * 
@@ -74,6 +78,7 @@ public class ProfileSelector extends JFrame implements ActionListener,
 		}
 		list = new JList(model);
 		list.addListSelectionListener(this);
+		list.addMouseListener(this);
 		Border raisedetched = BorderFactory
 				.createEtchedBorder(EtchedBorder.RAISED);
 		JScrollPane jsp = new JScrollPane(list);
@@ -123,6 +128,14 @@ public class ProfileSelector extends JFrame implements ActionListener,
 		this.add(lowerButtonsPanel, BorderLayout.SOUTH);
 
 		this.setSize(400, 200);
+
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int xpos = size.width/2;
+		int ypos = size.height/2;
+		xpos -= this.getWidth()/2;
+		ypos -= this.getHeight()/2;
+		this.setLocation(xpos, ypos);
+		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
@@ -205,6 +218,41 @@ public class ProfileSelector extends JFrame implements ActionListener,
 			editButton.setEnabled((list.getSelectedIndex() != -1));
 			delButton.setEnabled((list.getSelectedIndex() != -1));
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		if(arg0.getClickCount() == 2){
+			if(list.getSelectedIndex() == -1){
+				return;
+			}
+			this.selected = (ConnectionProfile) list.getSelectedValue();
+			synchronized (this) {
+				this.notifyAll();
+			}
+			this.dispose();
+			
+		}
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		
 	}
 
 }

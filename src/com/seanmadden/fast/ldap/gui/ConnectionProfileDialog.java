@@ -25,8 +25,10 @@
 
 package com.seanmadden.fast.ldap.gui;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -122,6 +124,14 @@ public class ConnectionProfileDialog extends JFrame implements ActionListener {
 
 		this.setSize(500, 200);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int xpos = size.width/2;
+		int ypos = size.height/2;
+		xpos -= this.getWidth()/2;
+		ypos -= this.getHeight()/2;
+		this.setLocation(xpos, ypos);
+		
 		this.setVisible(true);
 	}
 

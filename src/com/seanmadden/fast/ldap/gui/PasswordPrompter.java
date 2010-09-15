@@ -26,7 +26,9 @@
 package com.seanmadden.fast.ldap.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -80,6 +82,13 @@ public class PasswordPrompter {
 		buttons.add(cancelButton);
 		frame.add(buttons, BorderLayout.SOUTH);
 		
+		
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int xpos = size.width/2;
+		int ypos = size.height/2;
+		xpos -= frame.getWidth()/2;
+		ypos -= frame.getHeight()/2;
+		frame.setLocation(xpos, ypos);
 		frame.setVisible(true);
 		
 		synchronized(lock){

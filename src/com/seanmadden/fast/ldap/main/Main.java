@@ -35,6 +35,8 @@ import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
 
 import com.seanmadden.fast.ldap.ConnectionProfile;
+import com.seanmadden.fast.ldap.LdapInterface;
+import com.seanmadden.fast.ldap.gui.GuiErrorAlerter;
 import com.seanmadden.fast.ldap.gui.PasswordPrompter;
 import com.seanmadden.fast.ldap.gui.ProfileSelector;
 
@@ -78,11 +80,38 @@ public class Main {
 				.withDescription("The configuration file to load")
 				.withArgName("config.xml").create("c"));
 
+		opts.addOption(OptionBuilder.withLongOpt("profile").hasArg()
+				.withDescription("The profile to use").withArgName("Default")
+				.create("p"));
+
+		opts.addOption(OptionBuilder.withLongOpt("password").hasArg()
+				.withDescription("Password to connect with")
+				.withArgName("password").create("P"));
+
+		opts.addOption(OptionBuilder.withLongOpt("debug").hasArg(false)
+				.create('d'));
+		
+		opts.addOption(OptionBuilder.withLongOpt("verbose").hasArg(false)
+				.create('v'));
+
 		File configurationFile = new File("config.xml");
 
 		try {
 			// Parse the command-line options
 			CommandLine cmds = parser.parse(opts, args);
+
+			if (!cmds.hasOption('p')) {
+				Logger.getRootLogger().addAppender(
+						new GuiErrorAlerter(Level.ERROR));
+			}
+			
+			Logger.getRootLogger().setLevel(Level.ERROR);
+			if(cmds.hasOption('v')){
+				Logger.getRootLogger().setLevel(Level.INFO);
+			}
+			if(cmds.hasOption('d')){
+				Logger.getRootLogger().setLevel(Level.DEBUG);
+			}
 
 			log.debug("Enabling configuration file parsing");
 			// The user has given us a file to parse.
@@ -114,37 +143,55 @@ public class Main {
 						auth, group);
 				profs.add(prof);
 			}
-
-			/*
-			 * Deploy the profile selector, to select a profile
-			 */
-			ProfileSelector profSel = new ProfileSelector(profs);
-			ConnectionProfile prof = profSel.getSelection();
-			if (prof == null) {
-				return;
+			ConnectionProfile prof = null;
+			if (!cmds.hasOption('p')) {
+				/*
+				 * Deploy the profile selector, to select a profile
+				 */
+				ProfileSelector profSel = new ProfileSelector(profs);
+				prof = profSel.getSelection();
+				if (prof == null) {
+					return;
+				}
+				/*
+				 * Empty the profiles and load a clean copy - then save it back
+				 * to the file
+				 */
+				config.clearTree("Profiles");
+				for (ConnectionProfile p : profSel.getProfiles()) {
+					config.addProperty("Profiles.Profile(-1)[@name]",
+							p.getName());
+					config.addProperty("Profiles.Profile.LdapAuthString",
+							p.getLdapAuthString());
+					config.addProperty("Profiles.Profile.LdapServerString",
+							p.getLdapServerString());
+					config.addProperty("Profiles.Profile.LdapGroupsLocation",
+							p.getLdapGroupsString());
+				}
+				config.save(configurationFile);
+			} else {
+				for (ConnectionProfile p : profs) {
+					if (p.getName().equals(cmds.getOptionValue('p'))) {
+						prof = p;
+						break;
+					}
+				}
 			}
+
 			log.info("User selected " + prof);
 
-			/*
-			 * Empty the profiles and load a clean copy - then save it back to
-			 * the file
-			 */
-			config.clearTree("Profiles");
-			for (ConnectionProfile p : profSel.getProfiles()) {
-				config.addProperty("Profiles.Profile(-1)[@name]", p.getName());
-				config.addProperty("Profiles.Profile.LdapAuthString",
-						p.getLdapAuthString());
-				config.addProperty("Profiles.Profile.LdapServerString",
-						p.getLdapServerString());
-				config.addProperty("Profiles.Profile.LdapGroupsLocation",
-						p.getLdapGroupsString());
+			String password = "";
+			if (cmds.hasOption('P')) {
+				password = cmds.getOptionValue('P');
+			} else {
+				password = PasswordPrompter.promptForPassword("Password?");
 			}
-			config.save(configurationFile);
-			
-			String password = PasswordPrompter.promptForPassword("Password?");
-			System.out.println(password);
-			
-			
+
+			LdapInterface ldap = new LdapInterface(prof.getLdapServerString(),
+					prof.getLdapAuthString(), prof.getLdapGroupsString(),
+					password);
+			ldap.getGroups();
+
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);
