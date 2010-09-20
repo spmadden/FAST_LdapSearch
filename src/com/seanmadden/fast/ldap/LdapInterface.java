@@ -44,30 +44,40 @@ public class LdapInterface {
 		try {
 			DirContext ctx = new InitialDirContext(env);
 			LdapCtx user = (LdapCtx)ctx.lookup(this.auth);
-			Attributes userAtt = user.getAttributes("");
-			NamingEnumeration<? extends Attribute> userAtts = userAtt.getAll();
-			while(userAtts.hasMore()){
-				Attribute next = userAtts.next();
-				System.out.println(next);
+			LdapCtx schema = (LdapCtx)ctx.lookup("CN=Person,CN=Schema,CN=Configuration,DC=finance,DC=rit,DC=edu");
+			
+//			DirContext schema= user.getSchema("");
+			System.out.println(schema.getSchema(""));
+			NamingEnumeration<NameClassPair> schemaList = schema.getSchema("").list("");
+			while(schemaList.hasMore()){
+				NameClassPair ncp = schemaList.next();
+				System.out.println(ncp.getName());
+				System.out.println(ncp);
 			}
-/*			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
-			NamingEnumeration<NameClassPair> elems = e.list("");
-			while(elems.hasMore()){
-				NameClassPair ncp = elems.next();
-				System.out.println("Name: " + ncp.getName());
-				if(ncp.getName().startsWith("OU")){
-					NamingEnumeration<NameClassPair> el = e.list(ncp.getName());
-					while(el.hasMore()){
-						NameClassPair ncp1 = el.next();
-						System.out.println(" -> " + ncp1.getName());
-					}
-				}else if(ncp.getName().startsWith("CN")){
-					System.out.println(e.getAttributes(ncp.getName()));
-				}
-				System.out.println();
-				
-			}
-			*/
+//			Attributes userAtt = user.getAttributes("");
+//			NamingEnumeration<? extends Attribute> userAtts = userAtt.getAll();
+//			while(userAtts.hasMore()){
+//				Attribute next = userAtts.next();
+//				System.out.println(next);
+//			}
+//			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
+//			NamingEnumeration<NameClassPair> elems = e.list("");
+//			while(elems.hasMore()){
+//				NameClassPair ncp = elems.next();
+//				System.out.println("Name: " + ncp.getName());
+//				if(ncp.getName().startsWith("OU")){
+//					NamingEnumeration<NameClassPair> el = e.list(ncp.getName());
+//					while(el.hasMore()){
+//						NameClassPair ncp1 = el.next();
+//						System.out.println(" -> " + ncp1.getName());
+//					}
+//				}else if(ncp.getName().startsWith("CN")){
+//					System.out.println(e.getAttributes(ncp.getName()));
+//				}
+//				System.out.println();
+//				
+//			}
+//			
 		} catch (NamingException e) {
 			if(e.getRootCause() instanceof UnknownHostException){
 				log.fatal("Cannot connect to server.");

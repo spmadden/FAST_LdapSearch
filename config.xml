@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
+<Reports>
+		<Report name="TestProfile" type="UserAttribute">
+			<ResolveCNs>false</ResolveCNs>
+			<Attribute order="4">memberOf</Attribute>
+			<Attribute order="0">userPrincipalName</Attribute>
+			<Attribute order="1">displayName</Attribute>
+			<Attribute order="3">telephoneNumber</Attribute>
+			<Attribute order="2">description</Attribute>
+		</Report>
+	</Reports>
 <Profiles>
 <Profile name="Finance spmfa">
 <LdapAuthString>cn=spmfa,OU=Support,OU=Systems &amp; Technology,OU=Finance &amp; Administration,DC=finance,DC=rit,DC=edu</LdapAuthString>

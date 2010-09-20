@@ -22,6 +22,7 @@
 		<unjar src="./libs/commons-lang-2.5.jar" dest="${bin}" />
 		<unjar src="./libs/commons-logging-1.1.1.jar" dest="${bin}" />
 		<unjar src="./libs/log4j-1.2.16.jar" dest="${bin}" />
+		<unjar src="./libs/jxl.jar" dest="${bin}" />
 		<javac srcdir="${src}"
          destdir="${bin}"
          classpath="${src}"
