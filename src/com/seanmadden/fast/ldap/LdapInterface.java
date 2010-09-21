@@ -53,11 +53,6 @@ public class LdapInterface {
 				LdapGroup group = new LdapGroup(e, ncp.getName().substring(3));
 				if(ncp.getName().startsWith("OU")){
 					group.setOu(true);
-//					NamingEnumeration<NameClassPair> el = e.list(ncp.getName());
-//					while(el.hasMore()){
-//						NameClassPair ncp1 = el.next();
-//						System.out.println(" -> " + ncp1.getName());
-//					}
 				}else if(ncp.getName().startsWith("CN")){
 //					System.out.println(e.getAttributes(ncp.getName()));
 				}
