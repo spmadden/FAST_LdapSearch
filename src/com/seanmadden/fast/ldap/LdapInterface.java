@@ -2,14 +2,14 @@ package com.seanmadden.fast.ldap;
 
 import java.net.UnknownHostException;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Vector;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
@@ -34,40 +34,37 @@ public class LdapInterface {
 		
 	}
 
-	public void getGroups(){
+	public List<LdapGroup> getGroups(){
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, this.server);
 		env.put(Context.SECURITY_PRINCIPAL, this.auth);
 		env.put(Context.SECURITY_CREDENTIALS, this.password);
 		
+		Vector<LdapGroup> groups = new Vector<LdapGroup>();
+		
 		try {
 			DirContext ctx = new InitialDirContext(env);
-			LdapCtx user = (LdapCtx)ctx.lookup(this.auth);
-			Attributes userAtt = user.getAttributes("");
-			NamingEnumeration<? extends Attribute> userAtts = userAtt.getAll();
-			while(userAtts.hasMore()){
-				Attribute next = userAtts.next();
-				System.out.println(next);
-			}
-/*			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
+			LdapCtx e = (LdapCtx)ctx.lookup(this.groups);
 			NamingEnumeration<NameClassPair> elems = e.list("");
 			while(elems.hasMore()){
 				NameClassPair ncp = elems.next();
-				System.out.println("Name: " + ncp.getName());
+//				System.out.println("Name: " + ncp.getName());
+				LdapGroup group = new LdapGroup(e, ncp.getName().substring(3));
 				if(ncp.getName().startsWith("OU")){
-					NamingEnumeration<NameClassPair> el = e.list(ncp.getName());
-					while(el.hasMore()){
-						NameClassPair ncp1 = el.next();
-						System.out.println(" -> " + ncp1.getName());
-					}
+					group.setOu(true);
+//					NamingEnumeration<NameClassPair> el = e.list(ncp.getName());
+//					while(el.hasMore()){
+//						NameClassPair ncp1 = el.next();
+//						System.out.println(" -> " + ncp1.getName());
+//					}
 				}else if(ncp.getName().startsWith("CN")){
-					System.out.println(e.getAttributes(ncp.getName()));
+//					System.out.println(e.getAttributes(ncp.getName()));
 				}
-				System.out.println();
-				
+				groups.add(group);
+//				System.out.println();
 			}
-			*/
+			return groups;
 		} catch (NamingException e) {
 			if(e.getRootCause() instanceof UnknownHostException){
 				log.fatal("Cannot connect to server.");
@@ -77,5 +74,6 @@ public class LdapInterface {
 				e.printStackTrace();
 			}
 		}
+		return null;
 	}
 }
