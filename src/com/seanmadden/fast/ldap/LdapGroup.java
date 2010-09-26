@@ -56,10 +56,7 @@ public class LdapGroup {
 	
 	public List<LdapGroup> getSubGroups() throws NamingException{
 		Vector<LdapGroup> groups = new Vector<LdapGroup>();
-		String name = "OU=" + this.name;
-		if(this.parent != null){
-			name += ",OU=" + parent.name;
-		}
+		String name = this.getName();
 		NamingEnumeration<NameClassPair> el = inter.list(name);
 		while(el.hasMore()){
 			NameClassPair ncp = el.next();
@@ -109,6 +106,31 @@ public class LdapGroup {
 	 */
 	public void setParent(LdapGroup parent) {
 		this.parent = parent;
+	}
+
+	/**
+	 * Returns the name
+	 *
+	 * @return name the name
+	 */
+	public String getName() {
+		String dn = "CN=";
+		if(this.isOu){
+			dn="OU=";
+		}
+		if(this.parent != null){
+			return dn+this.name + "," + this.parent.getName();
+		}
+		return dn+this.name;
+	}
+
+	/**
+	 * Sets the name
+	 *
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**
