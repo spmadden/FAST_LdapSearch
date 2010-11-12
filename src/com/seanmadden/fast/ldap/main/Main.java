@@ -37,6 +37,7 @@ import org.apache.log4j.*;
 import com.seanmadden.fast.ldap.ConnectionProfile;
 import com.seanmadden.fast.ldap.LdapInterface;
 import com.seanmadden.fast.ldap.gui.GuiErrorAlerter;
+import com.seanmadden.fast.ldap.gui.MainWindow;
 import com.seanmadden.fast.ldap.gui.PasswordPrompter;
 import com.seanmadden.fast.ldap.gui.ProfileSelector;
 
@@ -186,12 +187,17 @@ public class Main {
 			} else {
 				password = PasswordPrompter.promptForPassword("Password?");
 			}
+			
+			if(password.equals("")){
+				return;
+			}
 
 			LdapInterface ldap = new LdapInterface(prof.getLdapServerString(),
 					prof.getLdapAuthString(), prof.getLdapGroupsString(),
 					password);
-			ldap.getGroups();
-
+			
+			MainWindow mw = new MainWindow(ldap.getGroups());
+			
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);

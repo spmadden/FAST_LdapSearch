@@ -48,7 +48,7 @@ public class PasswordPrompter {
 		
 		final JFrame frame = new JFrame(message.toString());
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.setSize(400, 100);
+		frame.setSize(400, 110);
 		frame.setLayout(new BorderLayout());
 		frame.add(new JLabel(message.toString()), BorderLayout.NORTH);
 		

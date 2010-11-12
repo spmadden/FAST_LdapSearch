@@ -110,8 +110,9 @@ public class ProfileSelector extends JFrame implements ActionListener,
 
 		selectButton = new JButton("Select");
 		selectButton.setActionCommand("OK");
-		selectButton.setMnemonic('O');
+		selectButton.setMnemonic('S');
 		selectButton.addActionListener(this);
+		this.getRootPane().setDefaultButton(selectButton);
 
 		selectButton.setEnabled(false);
 		editButton.setEnabled(false);
