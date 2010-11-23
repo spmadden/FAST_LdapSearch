@@ -24,6 +24,7 @@
  */
 
 package com.seanmadden.fast.ldap.reports;
+
 /**
 * [Insert class description here]
 *
