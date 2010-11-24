@@ -1,0 +1,203 @@
+/*
+ * ReportsWindow.java
+ *
+ * $Id $
+ * 
+ *    Copyright (C) 2010 Sean P Madden
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *    If you would like to license this code under the GNU LGPL, please see
+ *    http://www.seanmadden.net/licensing for details.
+ *
+ */
+
+package com.seanmadden.fast.ldap.gui;
+
+import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import com.seanmadden.fast.ldap.reports.Report;
+
+/**
+ * This class accepts a configuration object and allows the user to create, edit
+ * and delete ldap connection profiles.
+ * 
+ * @author Sean P Madden
+ */
+public class ReportsWindow extends JFrame implements ActionListener,
+		ListSelectionListener, MouseListener {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5836895241030077207L;
+
+	private List<Report> reports = null;
+	private JList list = null;
+	private JButton selectButton = null;
+	private Report selected = null;
+
+	public ReportsWindow(List<Report> reports) {
+		super("Select Report");
+		this.reports = reports;
+
+		this.setLayout(new BorderLayout(10, 10));
+
+		DefaultListModel model = new DefaultListModel();
+		if (this.reports == null) {
+			this.reports = new Vector<Report>();
+		}
+		for (Report p : this.reports) {
+			model.addElement(p);
+		}
+		list = new JList(model);
+		list.addListSelectionListener(this);
+		list.addMouseListener(this);
+		Border raisedetched = BorderFactory
+				.createEtchedBorder(EtchedBorder.RAISED);
+		JScrollPane jsp = new JScrollPane(list);
+		jsp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		jsp.setBorder(raisedetched);
+		this.add(jsp, BorderLayout.CENTER);
+
+		JButton addButton = new JButton("Add Profile");
+		addButton.setActionCommand("ADD");
+		addButton.setMnemonic('A');
+		addButton.addActionListener(this);
+
+
+		JPanel buttonsPanel = new JPanel(new GridLayout(3, 1, 10, 10));
+		buttonsPanel.add(addButton);
+		this.add(buttonsPanel, BorderLayout.EAST);
+
+		selectButton = new JButton("Select");
+		selectButton.setActionCommand("OK");
+		selectButton.setMnemonic('S');
+		selectButton.addActionListener(this);
+		this.getRootPane().setDefaultButton(selectButton);
+
+		selectButton.setEnabled(false);
+
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.setActionCommand("CANCEL");
+		cancelButton.setMnemonic('C');
+		cancelButton.addActionListener(this);
+
+		JPanel lowerButtonsPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+		lowerButtonsPanel.add(selectButton);
+		lowerButtonsPanel.add(cancelButton);
+		this.add(lowerButtonsPanel, BorderLayout.SOUTH);
+
+		this.setSize(400, 200);
+
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int xpos = size.width/2;
+		int ypos = size.height/2;
+		xpos -= this.getWidth()/2;
+		ypos -= this.getHeight()/2;
+		this.setLocation(xpos, ypos);
+		
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	}
+
+	public synchronized Report getSelection() {
+		this.setVisible(true);
+		try {
+			this.wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		return selected;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		String cmd = arg0.getActionCommand();
+		if (cmd.equals("OK")) {
+			this.selected = (Report) list.getSelectedValue();
+			synchronized (this) {
+				this.notifyAll();
+			}
+			this.dispose();
+		} else if (cmd.equals("CANCEL")) {
+			synchronized (this) {
+				this.notifyAll();
+			}
+			this.dispose();
+		}
+
+	}
+	
+	public List<Report> getProfiles(){
+		return reports;
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent arg0) {
+		if (!arg0.getValueIsAdjusting()) {
+			selectButton.setEnabled((list.getSelectedIndex() != -1));
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		if(arg0.getClickCount() == 2){
+			if(list.getSelectedIndex() == -1){
+				return;
+			}
+			this.selected = (Report) list.getSelectedValue();
+			synchronized (this) {
+				this.notifyAll();
+			}
+			this.dispose();
+			
+		}
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		
+	}
+
+}

@@ -34,10 +34,10 @@ import org.apache.commons.cli.*;
 import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
 
-import com.seanmadden.fast.ldap.ConnectionProfile;
+import com.seanmadden.fast.ldap.Report;
 import com.seanmadden.fast.ldap.LdapInterface;
 import com.seanmadden.fast.ldap.gui.GuiErrorAlerter;
-import com.seanmadden.fast.ldap.gui.MainWindow;
+import com.seanmadden.fast.ldap.gui.GroupsWindow;
 import com.seanmadden.fast.ldap.gui.PasswordPrompter;
 import com.seanmadden.fast.ldap.gui.ProfileSelector;
 
@@ -131,7 +131,7 @@ public class Main {
 			/*
 			 * Convert the profiles into memory
 			 */
-			Vector<ConnectionProfile> profs = new Vector<ConnectionProfile>();
+			Vector<Report> profs = new Vector<Report>();
 			List<?> profList = config.configurationAt("Profiles")
 					.configurationsAt("Profile");
 			for (Object p : profList) {
@@ -140,11 +140,11 @@ public class Main {
 				String auth = profile.getString("LdapAuthString");
 				String server = profile.getString("LdapServerString");
 				String group = profile.getString("LdapGroupsLocation");
-				ConnectionProfile prof = new ConnectionProfile(name, server,
+				Report prof = new Report(name, server,
 						auth, group);
 				profs.add(prof);
 			}
-			ConnectionProfile prof = null;
+			Report prof = null;
 			if (!cmds.hasOption('p')) {
 				/*
 				 * Deploy the profile selector, to select a profile
@@ -159,7 +159,7 @@ public class Main {
 				 * to the file
 				 */
 				config.clearTree("Profiles");
-				for (ConnectionProfile p : profSel.getProfiles()) {
+				for (Report p : profSel.getProfiles()) {
 					config.addProperty("Profiles.Profile(-1)[@name]",
 							p.getName());
 					config.addProperty("Profiles.Profile.LdapAuthString",
@@ -171,7 +171,7 @@ public class Main {
 				}
 				config.save(configurationFile);
 			} else {
-				for (ConnectionProfile p : profs) {
+				for (Report p : profs) {
 					if (p.getName().equals(cmds.getOptionValue('p'))) {
 						prof = p;
 						break;
@@ -196,7 +196,7 @@ public class Main {
 					prof.getLdapAuthString(), prof.getLdapGroupsString(),
 					password);
 			
-			MainWindow mw = new MainWindow(ldap.getGroups());
+			
 			
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();

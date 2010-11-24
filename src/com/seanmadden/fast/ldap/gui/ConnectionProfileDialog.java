@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import com.seanmadden.fast.ldap.ConnectionProfile;
 
+
 /**
  * A GUI to modify the contents of the Connection Profile
  * 

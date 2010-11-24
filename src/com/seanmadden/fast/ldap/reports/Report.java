@@ -23,6 +23,11 @@
 package com.seanmadden.fast.ldap.reports;
 
 import java.util.Collection;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
+
+import com.seanmadden.xmlconfiguration.XMLDataValue;
 
 /**
 * This interface represents a single report.
@@ -30,6 +35,8 @@ import java.util.Collection;
 * @author Sean P Madden
 */
 public abstract class Report {
+	
+		public static Logger logger = Logger.getLogger(Report.class);
         
         public Report(){};
         
@@ -53,5 +60,17 @@ public abstract class Report {
         */
         public String getName(){
                 return this.getClass().getName().substring(this.getClass().getName().lastIndexOf('.')+1);
+        }
+        
+        public boolean hasOptions(){
+        	return false;
+        }
+        
+        public Collection<String> getOptions(){
+        	return new Vector<String>();
+        }
+        
+        public String toString(){
+        	return getName();
         }
 }
