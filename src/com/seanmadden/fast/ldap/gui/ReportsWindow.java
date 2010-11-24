@@ -56,12 +56,12 @@ public class ReportsWindow extends JFrame implements ActionListener,
 	 */
 	private static final long serialVersionUID = 5836895241030077207L;
 
-	private List<Report> reports = null;
+	private Collection<Report> reports = null;
 	private JList list = null;
 	private JButton selectButton = null;
 	private Report selected = null;
 
-	public ReportsWindow(List<Report> reports) {
+	public ReportsWindow(Collection<Report> reports) {
 		super("Select Report");
 		this.reports = reports;
 
@@ -84,18 +84,9 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		jsp.setBorder(raisedetched);
 		this.add(jsp, BorderLayout.CENTER);
+		
 
-		JButton addButton = new JButton("Add Profile");
-		addButton.setActionCommand("ADD");
-		addButton.setMnemonic('A');
-		addButton.addActionListener(this);
-
-
-		JPanel buttonsPanel = new JPanel(new GridLayout(3, 1, 10, 10));
-		buttonsPanel.add(addButton);
-		this.add(buttonsPanel, BorderLayout.EAST);
-
-		selectButton = new JButton("Select");
+		selectButton = new JButton("Execute");
 		selectButton.setActionCommand("OK");
 		selectButton.setMnemonic('S');
 		selectButton.addActionListener(this);
@@ -154,7 +145,7 @@ public class ReportsWindow extends JFrame implements ActionListener,
 
 	}
 	
-	public List<Report> getProfiles(){
+	public Collection<Report> getProfiles(){
 		return reports;
 	}
 

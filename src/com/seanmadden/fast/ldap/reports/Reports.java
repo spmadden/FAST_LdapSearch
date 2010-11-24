@@ -24,56 +24,69 @@ package com.seanmadden.fast.ldap.reports;
 import java.util.Collection;
 import java.util.Vector;
 
+import com.seanmadden.fast.ldap.LdapInterface;
 import com.seanmadden.utilities.ClassFinder;
 
 /**
-* This class is the entrypoint for all the reports functions.  A report will register itself for it's availablility to be displayed and used.
-*
-* @author Sean P Madden
-*/
+ * This class is the entrypoint for all the reports functions. A report will
+ * register itself for it's availablility to be displayed and used.
+ * 
+ * @author Sean P Madden
+ */
 public class Reports {
 
-        /**
-         * The reports object.
-         */
-        private static Reports theReport = null;
-        
-        /**
-         * A list of all the available reports
-         */
-        private Vector<Report> reports = new Vector<Report>();
-        
-        /**
-         * Ugh.. A singleton.  I dislike.
-         *
-         */
-        private Reports() {
-                Vector<String> reps = ClassFinder.findAllInterfaces(Report.class);
-                for(String r : reps){
-                        try {
-                                reports.add((Report)Class.forName(r).newInstance());
-                        } catch (InstantiationException e) {
-                                e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                        }
-                }
-        }
-        
-        public Collection<Report> getAllReports(){
-                return this.reports;
-        }
-        
-        /**
-        * IT'S A SINGLETON!
-        * 
-        * @return WAHHHH
-        */
-        public static Reports getInstance(){
-                if(theReport == null) theReport = new Reports();
-                return theReport;
-        }
-        
+	/**
+	 * The reports object.
+	 */
+	private static Reports theReport = null;
+
+	/**
+	 * A list of all the available reports
+	 */
+	private Vector<Report> reports = new Vector<Report>();
+
+	private LdapInterface ldap;
+
+	/**
+	 * Ugh.. A singleton. I dislike.
+	 * 
+	 */
+	private Reports() {
+	}
+
+	public Collection<Report> getAllReports() {
+		Vector<String> reps = ClassFinder.findAllInterfaces(Report.class);
+		for (String r : reps) {
+			try {
+				reports.add((Report) Class.forName(r).newInstance());
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		return this.reports;
+	}
+
+	public void setLdapConnection(LdapInterface inter) {
+		this.ldap = inter;
+	}
+
+	public LdapInterface getLdapInterface() {
+		return this.ldap;
+	}
+
+	/**
+	 * IT'S A SINGLETON!
+	 * 
+	 * @return WAHHHH
+	 */
+	public static Reports getInstance() {
+		if (theReport == null)
+			theReport = new Reports();
+		return theReport;
+	}
+	
 }

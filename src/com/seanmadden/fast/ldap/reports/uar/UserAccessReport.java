@@ -37,6 +37,7 @@ import javax.naming.directory.SearchResult;
 import com.seanmadden.fast.ldap.*;
 import com.seanmadden.fast.ldap.reports.Report;
 import com.seanmadden.fast.ldap.reports.ReportResult;
+import com.seanmadden.fast.ldap.reports.Reports;
 import com.sun.jndi.ldap.LdapCtx;
 
 /**
@@ -51,8 +52,8 @@ public class UserAccessReport extends Report {
 	private User user = null;
 	private String entryDN = "";
 
-	public UserAccessReport(LdapInterface inter) {
-		this.inter = inter;
+	public UserAccessReport() {
+		this.inter = Reports.getInstance().getLdapInterface();
 	}
 
 	public Collection<ReportResult> getResult() {

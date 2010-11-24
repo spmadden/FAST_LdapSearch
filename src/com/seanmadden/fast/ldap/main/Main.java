@@ -34,12 +34,10 @@ import org.apache.commons.cli.*;
 import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
 
-import com.seanmadden.fast.ldap.Report;
-import com.seanmadden.fast.ldap.LdapInterface;
-import com.seanmadden.fast.ldap.gui.GuiErrorAlerter;
-import com.seanmadden.fast.ldap.gui.GroupsWindow;
-import com.seanmadden.fast.ldap.gui.PasswordPrompter;
-import com.seanmadden.fast.ldap.gui.ProfileSelector;
+import com.seanmadden.fast.ldap.*;
+import com.seanmadden.fast.ldap.gui.*;
+import com.seanmadden.fast.ldap.reports.Report;
+import com.seanmadden.fast.ldap.reports.Reports;
 
 /**
  * [Insert class description here]
@@ -131,7 +129,7 @@ public class Main {
 			/*
 			 * Convert the profiles into memory
 			 */
-			Vector<Report> profs = new Vector<Report>();
+			Vector<ConnectionProfile> profs = new Vector<ConnectionProfile>();
 			List<?> profList = config.configurationAt("Profiles")
 					.configurationsAt("Profile");
 			for (Object p : profList) {
@@ -140,11 +138,11 @@ public class Main {
 				String auth = profile.getString("LdapAuthString");
 				String server = profile.getString("LdapServerString");
 				String group = profile.getString("LdapGroupsLocation");
-				Report prof = new Report(name, server,
+				ConnectionProfile prof = new ConnectionProfile(name, server,
 						auth, group);
 				profs.add(prof);
 			}
-			Report prof = null;
+			ConnectionProfile prof = null;
 			if (!cmds.hasOption('p')) {
 				/*
 				 * Deploy the profile selector, to select a profile
@@ -159,7 +157,7 @@ public class Main {
 				 * to the file
 				 */
 				config.clearTree("Profiles");
-				for (Report p : profSel.getProfiles()) {
+				for (ConnectionProfile p : profSel.getProfiles()) {
 					config.addProperty("Profiles.Profile(-1)[@name]",
 							p.getName());
 					config.addProperty("Profiles.Profile.LdapAuthString",
@@ -171,7 +169,7 @@ public class Main {
 				}
 				config.save(configurationFile);
 			} else {
-				for (Report p : profs) {
+				for (ConnectionProfile p : profs) {
 					if (p.getName().equals(cmds.getOptionValue('p'))) {
 						prof = p;
 						break;
@@ -196,7 +194,16 @@ public class Main {
 					prof.getLdapAuthString(), prof.getLdapGroupsString(),
 					password);
 			
-			
+			/*
+			 * Deploy the Reports selector, to select a report
+			 */
+			Reports.getInstance().setLdapConnection(ldap);
+			ReportsWindow reports = new ReportsWindow(Reports.getInstance().getAllReports());
+			Report report = reports.getSelection();
+			if (report == null) {
+				return;
+			}
+			System.out.println(report);
 			
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();

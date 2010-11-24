@@ -66,8 +66,8 @@ public abstract class Report {
         	return false;
         }
         
-        public Collection<String> getOptions(){
-        	return new Vector<String>();
+        public Collection<ReportOption> getOptions(){
+        	return new Vector<ReportOption>();
         }
         
         public String toString(){
