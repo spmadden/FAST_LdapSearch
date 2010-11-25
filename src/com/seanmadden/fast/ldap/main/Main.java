@@ -27,6 +27,7 @@ package com.seanmadden.fast.ldap.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -37,6 +38,7 @@ import org.apache.log4j.*;
 import com.seanmadden.fast.ldap.*;
 import com.seanmadden.fast.ldap.gui.*;
 import com.seanmadden.fast.ldap.reports.Report;
+import com.seanmadden.fast.ldap.reports.ReportOption;
 import com.seanmadden.fast.ldap.reports.Reports;
 
 /**
@@ -89,7 +91,7 @@ public class Main {
 
 		opts.addOption(OptionBuilder.withLongOpt("debug").hasArg(false)
 				.create('d'));
-		
+
 		opts.addOption(OptionBuilder.withLongOpt("verbose").hasArg(false)
 				.create('v'));
 
@@ -103,12 +105,12 @@ public class Main {
 				Logger.getRootLogger().addAppender(
 						new GuiErrorAlerter(Level.ERROR));
 			}
-			
+
 			Logger.getRootLogger().setLevel(Level.ERROR);
-			if(cmds.hasOption('v')){
+			if (cmds.hasOption('v')) {
 				Logger.getRootLogger().setLevel(Level.INFO);
 			}
-			if(cmds.hasOption('d')){
+			if (cmds.hasOption('d')) {
 				Logger.getRootLogger().setLevel(Level.DEBUG);
 			}
 
@@ -185,26 +187,73 @@ public class Main {
 			} else {
 				password = PasswordPrompter.promptForPassword("Password?");
 			}
-			
-			if(password.equals("")){
+
+			if (password.equals("")) {
 				return;
 			}
 
 			LdapInterface ldap = new LdapInterface(prof.getLdapServerString(),
 					prof.getLdapAuthString(), prof.getLdapGroupsString(),
 					password);
-			
+
+			/*
+			 * Gather options information from the configuration engine for the
+			 * specified report.
+			 */
+			Hashtable<String, Hashtable<String, ReportOption>> reportDataStructure = new Hashtable<String, Hashtable<String, ReportOption>>();
+			List<?> repConfig = config.configurationAt("Reports")
+					.configurationsAt("Report");
+			for (Object p : repConfig) {
+				SubnodeConfiguration repNode = (SubnodeConfiguration) p;
+
+				// TODO Do something with the report profile.
+				// Allowing the user to deploy "profiles" is a nice feature
+				// String profile = repNode.getString("[@profile]");
+
+				String reportName = repNode.getString("[@report]");
+				Hashtable<String, ReportOption> reportOptions = new Hashtable<String, ReportOption>();
+				reportDataStructure.put(reportName, reportOptions);
+				// Loop through the options and add each to the table.
+				for (Object o : repNode.configurationsAt("option")) {
+					SubnodeConfiguration option = (SubnodeConfiguration) o;
+					String name = option.getString("[@name]");
+					String type = option.getString("[@type]");
+					String value = option.getString("[@value]");
+
+					ReportOption ro = new ReportOption();
+					ro.setName(name);
+
+					if (type.toLowerCase().equals("boolean")) {
+						ro.setBoolValue(Boolean.parseBoolean(value));
+					} else if (type.toLowerCase().equals("integer")) {
+						ro.setIntValue(Integer.valueOf(value));
+					} else {
+						// Assume a string type here then.
+						ro.setStrValue(value);
+					}
+					reportOptions.put(name, ro);
+					log.debug(ro);
+				}
+			}
+			System.out.println(reportDataStructure);
+
+			/*
+			 * At this point, we now need to deploy the reports window to have
+			 * the user pick a report and select some happy options to allow
+			 * that report to work. Let's go.
+			 */
 			/*
 			 * Deploy the Reports selector, to select a report
 			 */
 			Reports.getInstance().setLdapConnection(ldap);
-			ReportsWindow reports = new ReportsWindow(Reports.getInstance().getAllReports());
+			ReportsWindow reports = new ReportsWindow(Reports.getInstance()
+					.getAllReports(), reportDataStructure);
 			Report report = reports.getSelection();
 			if (report == null) {
 				return;
 			}
-			System.out.println(report);
-			
+			log.debug(report.getClass().getCanonicalName());
+
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);

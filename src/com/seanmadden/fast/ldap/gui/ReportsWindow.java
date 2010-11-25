@@ -40,7 +40,10 @@ import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.log4j.Logger;
+
 import com.seanmadden.fast.ldap.reports.Report;
+import com.seanmadden.fast.ldap.reports.ReportOption;
 
 /**
  * This class accepts a configuration object and allows the user to create, edit
@@ -51,17 +54,17 @@ import com.seanmadden.fast.ldap.reports.Report;
 public class ReportsWindow extends JFrame implements ActionListener,
 		ListSelectionListener, MouseListener {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5836895241030077207L;
+	private static Logger log = Logger.getLogger(ReportsWindow.class);
 
 	private Collection<Report> reports = null;
 	private JList list = null;
 	private JButton selectButton = null;
+	private JPanel optionsPanel = null;
 	private Report selected = null;
 
-	public ReportsWindow(Collection<Report> reports) {
+	public ReportsWindow(Collection<Report> reports,
+			Hashtable<String, Hashtable<String, ReportOption>> reportOptions) {
 		super("Select Report");
 		this.reports = reports;
 
@@ -83,8 +86,15 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		jsp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		jsp.setBorder(raisedetched);
-		this.add(jsp, BorderLayout.CENTER);
-		
+		this.add(jsp, BorderLayout.WEST);
+
+		optionsPanel = new JPanel();
+		optionsPanel.setSize(300, 400);
+		JScrollPane optionsScrollPane = new JScrollPane(optionsPanel);
+		optionsPanel.setLayout(new BorderLayout());
+		optionsPanel.add(new JLabel("Please select a report"),
+				BorderLayout.CENTER);
+		this.add(optionsScrollPane, BorderLayout.CENTER);
 
 		selectButton = new JButton("Execute");
 		selectButton.setActionCommand("OK");
@@ -104,15 +114,15 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		lowerButtonsPanel.add(cancelButton);
 		this.add(lowerButtonsPanel, BorderLayout.SOUTH);
 
-		this.setSize(400, 200);
+		this.setSize(600, 350);
 
 		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-		int xpos = size.width/2;
-		int ypos = size.height/2;
-		xpos -= this.getWidth()/2;
-		ypos -= this.getHeight()/2;
+		int xpos = size.width / 2;
+		int ypos = size.height / 2;
+		xpos -= this.getWidth() / 2;
+		ypos -= this.getHeight() / 2;
 		this.setLocation(xpos, ypos);
-		
+
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
@@ -144,8 +154,8 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		}
 
 	}
-	
-	public Collection<Report> getProfiles(){
+
+	public Collection<Report> getProfiles() {
 		return reports;
 	}
 
@@ -153,13 +163,25 @@ public class ReportsWindow extends JFrame implements ActionListener,
 	public void valueChanged(ListSelectionEvent arg0) {
 		if (!arg0.getValueIsAdjusting()) {
 			selectButton.setEnabled((list.getSelectedIndex() != -1));
+			Report r = (Report) list.getSelectedValue();
+			optionsPanel.removeAll();
+			if (r.hasOptions()) {
+				r.populateOptionsPanel(optionsPanel);
+			} else {
+				optionsPanel.setLayout(new BorderLayout());
+				optionsPanel.add(new JLabel("No options for\r\n this report"),
+						BorderLayout.CENTER);
+			}
+			optionsPanel.invalidate();
+			optionsPanel.validate();
+			optionsPanel.repaint();
 		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		if(arg0.getClickCount() == 2){
-			if(list.getSelectedIndex() == -1){
+		if (arg0.getClickCount() == 2) {
+			if (list.getSelectedIndex() == -1) {
 				return;
 			}
 			this.selected = (Report) list.getSelectedValue();
@@ -167,19 +189,19 @@ public class ReportsWindow extends JFrame implements ActionListener,
 				this.notifyAll();
 			}
 			this.dispose();
-			
+
 		}
-		
+
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		
+
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		
+
 	}
 
 	@Override
@@ -188,7 +210,7 @@ public class ReportsWindow extends JFrame implements ActionListener,
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		
+
 	}
 
 }

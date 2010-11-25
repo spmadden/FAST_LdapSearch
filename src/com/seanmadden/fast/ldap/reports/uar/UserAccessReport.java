@@ -25,6 +25,7 @@
 package com.seanmadden.fast.ldap.reports.uar;
 
 import java.util.Collection;
+import java.util.Vector;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -36,6 +37,7 @@ import javax.naming.directory.SearchResult;
 
 import com.seanmadden.fast.ldap.*;
 import com.seanmadden.fast.ldap.reports.Report;
+import com.seanmadden.fast.ldap.reports.ReportOption;
 import com.seanmadden.fast.ldap.reports.ReportResult;
 import com.seanmadden.fast.ldap.reports.Reports;
 import com.sun.jndi.ldap.LdapCtx;
@@ -51,6 +53,14 @@ public class UserAccessReport extends Report {
 	private LdapInterface inter;
 	private User user = null;
 	private String entryDN = "";
+	
+	private Vector<ReportOption> options = new Vector<ReportOption>(){
+		private static final long serialVersionUID = 2631350783253544448L;
+		{
+			add(new ReportOption("CN", "Username", "The username to search for", ""));
+		}
+		
+	};
 
 	public UserAccessReport() {
 		this.inter = Reports.getInstance().getLdapInterface();
@@ -58,6 +68,38 @@ public class UserAccessReport extends Report {
 
 	public Collection<ReportResult> getResult() {
 		return null;
+	}
+
+	/**
+	 * Returns the cannonical name of this report.
+	 *
+	 * @see com.seanmadden.fast.ldap.reports.Report#getName()
+	 * @return
+	 */
+	public String getName() {
+		return "User Access Report";
+	}
+
+	/**
+	 * Returns whether or not this report has options.  In this case, returns 
+	 * true.
+	 *
+	 * @see com.seanmadden.fast.ldap.reports.Report#hasOptions()
+	 * @return True.
+	 */
+	public boolean hasOptions() {
+		return options.size()>0;
+	}
+
+	/**
+	 * Returns a list of the available options for this report.
+	 *
+	 * @see com.seanmadden.fast.ldap.reports.Report#getOptions()
+	 * @return List of valid options for this report.
+	 */
+	@Override
+	public Collection<ReportOption> getOptions() {
+		return options;
 	}
 
 	public void execute() {

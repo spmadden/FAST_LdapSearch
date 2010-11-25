@@ -44,6 +44,10 @@ public class ReportOption {
 	private Integer intValue = 0;
 	private Boolean boolValue = true;
 
+	public ReportOption(){
+		
+	}
+	
 	public ReportOption(String name, String description, String help,
 			String strValue) {
 		this.name = name;
@@ -297,6 +301,7 @@ public class ReportOption {
 	 * @param strValue the strValue to set
 	 */
 	public void setStrValue(String strValue) {
+		this.type = Type.String;
 		this.strValue = strValue;
 	}
 
@@ -315,6 +320,7 @@ public class ReportOption {
 	 * @param intValue the intValue to set
 	 */
 	public void setIntValue(Integer intValue) {
+		this.type = Type.Integer;
 		this.intValue = intValue;
 	}
 
@@ -333,10 +339,8 @@ public class ReportOption {
 	 * @param boolValue the boolValue to set
 	 */
 	public void setBoolValue(Boolean boolValue) {
+		this.type = Type.Boolean;
 		this.boolValue = boolValue;
 	}
 	
-	
-	
-
 }

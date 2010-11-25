@@ -25,6 +25,8 @@ package com.seanmadden.fast.ldap.reports;
 import java.util.Collection;
 import java.util.Vector;
 
+import javax.swing.JPanel;
+
 import org.apache.log4j.Logger;
 
 import com.seanmadden.xmlconfiguration.XMLDataValue;
@@ -73,4 +75,8 @@ public abstract class Report {
         public String toString(){
         	return getName();
         }
+
+		public void populateOptionsPanel(JPanel optionsPanel) {
+			optionsPanel.setL
+		}
 }
