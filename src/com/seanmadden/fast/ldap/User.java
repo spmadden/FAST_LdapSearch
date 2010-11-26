@@ -39,6 +39,7 @@ public class User{
 	private String name = "";
 	private String description = "";
 	private String dn = "";
+	private String username = "";
 	
 	private String lastLogonIP = "";
 	private String lastLogonHost = "";
@@ -102,6 +103,22 @@ public class User{
 	}
 	public void setLastLogonMac(String lastLogonMac) {
 		this.lastLogonMac = lastLogonMac;
+	}
+	/**
+	 * Returns the username
+	 *
+	 * @return username the username
+	 */
+	public String getUsername() {
+		return username;
+	}
+	/**
+	 * Sets the username
+	 *
+	 * @param username the username to set
+	 */
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	@Override
 	public String toString() {

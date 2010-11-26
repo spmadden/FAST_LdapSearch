@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Vector;
 
 import com.seanmadden.fast.ldap.LdapInterface;
-import com.seanmadden.utilities.ClassFinder;
+import com.seanmadden.spikes.ClassFinder;
 
 /**
  * This class is the entrypoint for all the reports functions. A report will

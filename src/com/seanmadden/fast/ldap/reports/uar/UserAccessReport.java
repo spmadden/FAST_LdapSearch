@@ -62,6 +62,7 @@ public class UserAccessReport extends Report {
 			setForDn(user.getDn());
 			setReportName(getName());
 			setRunByDn(inter.getAuthDN());
+			setForName(user.getUsername());
 		}
 
 		public Collection<String> getSections() {
@@ -238,7 +239,7 @@ public class UserAccessReport extends Report {
 			}
 			System.out.println();
 		} catch (NamingException e) {
-			logger.error(e);
+			logger.debug(e);
 		}
 
 		try {
@@ -252,6 +253,7 @@ public class UserAccessReport extends Report {
 			u.setLastLogonHost((String) userAtts.get("userPCName").get());
 			u.setLastLogonIP((String) userAtts.get("userIP").get());
 			u.setLastLogonMac((String) userAtts.get("userMAC").get());
+			u.setUsername((String)userAtts.get("cn").get());
 
 			if (options.get("INC_PRINT").getBoolValue()) {
 				Attribute userPrinterAtts = userAtts.get("userPrinterMap");

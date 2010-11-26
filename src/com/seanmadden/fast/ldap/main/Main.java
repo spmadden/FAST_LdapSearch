@@ -31,6 +31,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.configuration.*;
 import org.apache.log4j.*;
@@ -40,6 +42,7 @@ import com.seanmadden.fast.ldap.gui.*;
 import com.seanmadden.fast.ldap.reports.ASCIIFormatter;
 import com.seanmadden.fast.ldap.reports.Report;
 import com.seanmadden.fast.ldap.reports.ReportOption;
+import com.seanmadden.fast.ldap.reports.ReportResult;
 import com.seanmadden.fast.ldap.reports.Reports;
 
 /**
@@ -254,17 +257,21 @@ public class Main {
 				return;
 			}
 			/*
-			 * Empty the profiles and load a clean copy - then save it back
-			 * to the file
+			 * Empty the profiles and load a clean copy - then save it back to
+			 * the file
 			 */
 			config.clearTree("Reports");
 			for (Report r : Reports.getInstance().getAllReports()) {
-				config.addProperty("Reports.Report(-1)[@report]", r.getClass().getCanonicalName());
+				config.addProperty("Reports.Report(-1)[@report]", r.getClass()
+						.getCanonicalName());
 				config.addProperty("Reports.Report[@name]", "Standard");
-				for(ReportOption ro: r.getOptions().values()){
-					config.addProperty("Reports.Report.option(-1)[@name]", ro.getName());
-					config.addProperty("Reports.Report.option[@type]", ro.getType());
-					config.addProperty("Reports.Report.option[@value]", ro.getStrValue());
+				for (ReportOption ro : r.getOptions().values()) {
+					config.addProperty("Reports.Report.option(-1)[@name]",
+							ro.getName());
+					config.addProperty("Reports.Report.option[@type]",
+							ro.getType());
+					config.addProperty("Reports.Report.option[@value]",
+							ro.getStrValue());
 				}
 			}
 			config.save(configurationFile);
@@ -272,9 +279,18 @@ public class Main {
 			bar.start();
 			report.execute();
 			ASCIIFormatter format = new ASCIIFormatter();
-			format.format(report.getResult(), new File("Test.txt"));
+			ReportResult res = report.getResult();
+			format.format(res,
+					new File(res.getForName() + "_" + res.getReportName()
+							+ ".txt"));
 			bar.stop();
-			
+
+			JOptionPane.showMessageDialog(
+					null,
+					"The report is at " + res.getForName() + "_"
+							+ res.getReportName() + ".txt", "Success",
+					JOptionPane.INFORMATION_MESSAGE);
+
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);

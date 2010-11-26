@@ -39,6 +39,7 @@ public abstract class ReportResult {
 			"yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	protected String runAtDate = dateFormatter.format(runDate);
 	protected String forCn = "";
+	protected String forName = "";
 	protected String forDn = "";
 	protected String runByDn = "";
 	protected String runByCn = "";
@@ -154,6 +155,24 @@ public abstract class ReportResult {
 	 */
 	public String getRunAtDate() {
 		return runAtDate;
+	}
+
+	/**
+	 * Returns the forName
+	 *
+	 * @return forName the forName
+	 */
+	public String getForName() {
+		return forName;
+	}
+
+	/**
+	 * Sets the forName
+	 *
+	 * @param forName the forName to set
+	 */
+	protected void setForName(String forName) {
+		this.forName = forName;
 	}
 
 }
