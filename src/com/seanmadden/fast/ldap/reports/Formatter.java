@@ -21,11 +21,14 @@
 *
 */
 package com.seanmadden.fast.ldap.reports;
+
+import java.io.File;
+
 /**
 * This is a formatter.  It makes pretty happies.
 *
 * @author Sean P Madden
 */
 public interface Formatter {
-        public Object format(ReportResult res);
+        public boolean format(ReportResult res, File output) throws Exception;
 }

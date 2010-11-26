@@ -55,11 +55,11 @@ public class User{
 		groups.add(group);
 	}
 	
-	public Collection<String> getShares(){
+	public Collection<String> getDirectShares(){
 		return shares;
 	}
 	
-	public Collection<String> getPrinters(){
+	public Collection<String> getDirectPrinters(){
 		return printers;
 	}
 	

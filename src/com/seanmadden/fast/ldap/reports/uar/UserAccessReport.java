@@ -54,7 +54,107 @@ public class UserAccessReport extends Report {
 	private LdapInterface inter;
 	private User user = null;
 	private String entryDN = "";
-	private static Logger log = Logger.getLogger(UserAccessReport.class);
+
+	protected class UARResult extends ReportResult {
+
+		{
+			setForCn(user.getName());
+			setForDn(user.getDn());
+			setReportName(getName());
+			setRunByDn(inter.getAuthDN());
+		}
+
+		public Collection<String> getSections() {
+			Vector<String> sections = new Vector<String>();
+			sections.add("Detailed User Information");
+			sections.add("Printers");
+			sections.add("Shares");
+			sections.add("Groups");
+			return sections;
+		}
+
+		public Collection<String> getSectionHeaders(String section) {
+			Vector<String> headers = new Vector<String>();
+			if (section.equals("Detailed User Information")) {
+				headers.add("Property");
+				headers.add("Value");
+			} else if (section.equals("Printers")) {
+				headers.add("Printer");
+				headers.add("Reason");
+			} else if (section.equals("Shares")) {
+				headers.add("Share");
+				headers.add("Reason");
+			} else if (section.equals("Groups")) {
+				headers.add("Group Membership");
+			}
+			return headers;
+		}
+
+		public Collection<String[]> getSectionFields(String section) {
+			Vector<String[]> fields = new Vector<String[]>();
+			if (section.equals("Detailed User Information")) {
+				String[] U_NAME = new String[] { "Username", user.getName() };
+				String[] U_DN = new String[] { "DistinguishedName",
+						user.getDn() };
+				String[] U_DESC = new String[] { "Description",
+						user.getDescription() };
+				String[] U_HOST = new String[] { "LastLogonHost",
+						user.getLastLogonHost() };
+				String[] U_IP = new String[] { "LastLogonIP",
+						user.getLastLogonIP() };
+				String[] U_MAC = new String[] { "LastLogonMAC",
+						user.getLastLogonMac() };
+				fields.add(U_NAME);
+				fields.add(U_DN);
+				fields.add(U_DESC);
+				fields.add(U_HOST);
+				fields.add(U_IP);
+				fields.add(U_MAC);
+			} else if (section.equals("Printers")) {
+				for (String printer : user.getDirectPrinters()) {
+					String[] p = new String[] { printer, "direct access" };
+					fields.add(p);
+				}
+				LinkedList<Group> queue = new LinkedList<Group>();
+				queue.addAll(user.getGroups());
+				while (queue.size() > 0) {
+					Group g = queue.pop();
+					for (String printer : g.getPrinters()) {
+						String[] p = new String[] { printer,
+								"Member of " + g.getName() };
+						fields.add(p);
+					}
+					queue.addAll(g.getGroups());
+				}
+			} else if (section.equals("Shares")) {
+				for (String share : user.getDirectShares()) {
+					String[] s = new String[] { share, "direct access" };
+					fields.add(s);
+				}
+				LinkedList<Group> queue = new LinkedList<Group>();
+				queue.addAll(user.getGroups());
+				while (queue.size() > 0) {
+					Group g = queue.pop();
+					for (String share : g.getShares()) {
+						String[] s = new String[] { share,
+								"Member of " + g.getName() };
+						fields.add(s);
+					}
+					queue.addAll(g.getGroups());
+				}
+			} else if (section.equals("Groups")) {
+				LinkedList<Group> queue = new LinkedList<Group>();
+				queue.addAll(user.getGroups());
+				while (queue.size() > 0) {
+					Group g = queue.pop();
+					String[] p = new String[] { g.getName() };
+					fields.add(p);
+					queue.addAll(g.getGroups());
+				}
+			}
+			return fields;
+		}
+	}
 
 	private Hashtable<String, ReportOption> options = new Hashtable<String, ReportOption>() {
 		private static final long serialVersionUID = 2631350783253544448L;
@@ -81,8 +181,9 @@ public class UserAccessReport extends Report {
 		this.inter = Reports.getInstance().getLdapInterface();
 	}
 
-	public Collection<ReportResult> getResult() {
-		return null;
+	public ReportResult getResult() {
+		ReportResult res = new UARResult();
+		return res;
 	}
 
 	/**
@@ -118,7 +219,7 @@ public class UserAccessReport extends Report {
 	}
 
 	public void execute() {
-		log.debug(options);
+		logger.debug(options);
 		DirContext ctx = inter.getContext();
 
 		SearchControls sc = new SearchControls();
@@ -133,7 +234,7 @@ public class UserAccessReport extends Report {
 			while (answer.hasMore()) {
 				SearchResult sr = answer.next();
 				entryDN = sr.getNameInNamespace();
-				System.out.println(entryDN);
+				logger.debug(entryDN);
 			}
 			System.out.println();
 		} catch (NamingException e) {
@@ -158,7 +259,9 @@ public class UserAccessReport extends Report {
 					NamingEnumeration<?> userPrinters = userPrinterAtts
 							.getAll();
 					while (userPrinters.hasMore()) {
-						u.addPrinter((String) userPrinters.next());
+						String printer = (String) userPrinters.next();
+						u.addPrinter(printer);
+						logger.info("Found Printer: " + printer);
 					}
 				}
 			}
@@ -168,20 +271,20 @@ public class UserAccessReport extends Report {
 				if (userShareAtts != null) {
 					NamingEnumeration<?> userShares = userShareAtts.getAll();
 					while (userShares.hasMore()) {
-						u.addShare((String) userShares.next());
+						String share = (String) userShares.next();
+						u.addShare(share);
+						logger.info("Found Share: " + share);
 					}
 				}
 			}
 
-			if (options.get("RECURSE").getBoolValue()) {
-				NamingEnumeration<?> memberships = userAtts.get("memberOf")
-						.getAll();
-				while (memberships.hasMore()) {
-					String membership = (String) memberships.next();
-					System.out.println(membership);
-					Group g = makeGroup(membership, ctx);
-					u.addGroup(g);
-				}
+			NamingEnumeration<?> memberships = userAtts.get("memberOf")
+					.getAll();
+			while (memberships.hasMore()) {
+				String membership = (String) memberships.next();
+				logger.info("Found group: " + membership);
+				Group g = makeGroup(membership, ctx);
+				u.addGroup(g);
 			}
 
 			user = u;
@@ -208,7 +311,9 @@ public class UserAccessReport extends Report {
 			if (groupShareAttrs != null) {
 				NamingEnumeration<?> shares = groupShareAttrs.getAll();
 				while (shares.hasMore()) {
-					g.addShare((String) shares.next());
+					String share = (String) shares.next();
+					g.addShare(share);
+					logger.info("Found share: " + share);
 				}
 			}
 		}
@@ -219,18 +324,24 @@ public class UserAccessReport extends Report {
 				NamingEnumeration<?> printers = printerAtts.getAll();
 
 				while (printers.hasMore()) {
-					g.addPrinter((String) printers.next());
+					String printer = (String) printers.next();
+					g.addPrinter(printer);
+					logger.info("Found printer: " + printer);
 				}
 			}
 		}
 
-		Attribute groupAtt = groupAttrs.get("memberOf");
-		if (groupAtt != null) {
-			NamingEnumeration<?> groups = groupAtt.getAll();
+		if (options.get("RECURSE").getBoolValue()) {
+			Attribute groupAtt = groupAttrs.get("memberOf");
+			if (groupAtt != null) {
+				NamingEnumeration<?> groups = groupAtt.getAll();
 
-			while (groups.hasMore()) {
-				Group gr = makeGroup((String) groups.next(), ctx);
-				g.addGroup(gr);
+				while (groups.hasMore()) {
+					String str = (String) groups.next();
+					logger.info("Found group: " + str);
+					Group gr = makeGroup(str, ctx);
+					g.addGroup(gr);
+				}
 			}
 		}
 		return g;

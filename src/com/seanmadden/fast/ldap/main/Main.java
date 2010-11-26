@@ -37,6 +37,7 @@ import org.apache.log4j.*;
 
 import com.seanmadden.fast.ldap.*;
 import com.seanmadden.fast.ldap.gui.*;
+import com.seanmadden.fast.ldap.reports.ASCIIFormatter;
 import com.seanmadden.fast.ldap.reports.Report;
 import com.seanmadden.fast.ldap.reports.ReportOption;
 import com.seanmadden.fast.ldap.reports.Reports;
@@ -267,15 +268,21 @@ public class Main {
 				}
 			}
 			config.save(configurationFile);
-			
+			ProgressBar bar = new ProgressBar();
+			bar.start();
 			report.execute();
-
+			ASCIIFormatter format = new ASCIIFormatter();
+			format.format(report.getResult(), new File("Test.txt"));
+			bar.stop();
+			
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("FAST Ldap Searcher", opts);
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 			log.fatal("OH EM GEES!  Configuration errors.");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}

@@ -21,49 +21,90 @@
  */
 package com.seanmadden.fast.ldap.reports;
 
-import java.util.Collection;
-
+import java.io.*;
+import java.rmi.AccessException;
 
 /**
-* The ASCII Formatter accepts a ReportResult and formats it into a Tab-Delimited sequence.
-*
-* @author Sean P Madden
-*/
+ * The ASCII Formatter accepts a ReportResult and formats it into a
+ * Tab-Delimited sequence.
+ * 
+ * @author Sean P Madden
+ */
 public class ASCIIFormatter implements Formatter {
 
-        /**
-         * Make me an ASCII Formatter!
-         *
-         */
-        public ASCIIFormatter() {
+	private static String header = "=========================================================\r\n|            ___  __    /  ___       __  ___            |\r\n|          |  |  /__`  /  |__   /\\  /__`  |             |\r\n|          |  |  .__/ /   |    /~~\\ .__/  |             |\r\n|       __        __      __   ___  __   __   __  ___   |\r\n| |    |  \\  /\\  |__)    |__) |__  |__) /  \\ |__)  |    |\r\n| |___ |__/ /~~\\ |       |  \\ |___ |    \\__/ |  \\  |    |\r\n|                                                       |\r\n=========================================================\r\n";
+	
+	/**
+	 * Make me an ASCII Formatter!
+	 * 
+	 */
+	public ASCIIFormatter() {
 
-        }
+	}
 
-        @Override
-        public String format(ReportResult res) {
-                Collection<String> col = res.getParemeters();
-                StringBuffer buf = new StringBuffer();
-                for (String param : col) {
+	public boolean format(ReportResult res, File output) throws Exception {
+		if(!output.canWrite()){
+			if(output.exists()){
+				throw new AccessException("Cannot write to file");
+			}
+			output.createNewFile();
+		}
+		FileWriter writer = new FileWriter(output);
+		writer.write(header);
+		writer.write("\r\n");
+		writer.write("Run At:  " + res.getRunAtDate() + "\r\n");
+		writer.write("Run By:  " + res.getRunByCn() + "/" + res.getRunByDn() + "\r\n");
+		writer.write("\r\n");
+		writer.write(res.getReportName() + " for user \r\n     " + res.getForCn() + "/"+res.getForDn() + "\r\n");
 
-                        buf.append(res.getParameter(param));
-                        buf.append(";");
-
-                }
-                buf.deleteCharAt(buf.length() - 1);
-                return buf.toString();
-        }
-
-        public String getHeader(ReportResult res) {
-                Collection<String> col = res.getParemeters();
-                StringBuffer buf = new StringBuffer();
-                for (String param : col) {
-
-                        buf.append(param);
-                        buf.append(";");
-
-                }
-                buf.deleteCharAt(buf.length() - 1);
-                return buf.toString();
-        }
+		for(String section : res.getSections()){
+			writer.write("\r\nSection: " + section + "\r\n");
+			
+			//Calculate the largest value of the columns
+			int[] longest = new int[res.getSectionHeaders(section).size()];
+			int pos = 0;
+			for(String header : res.getSectionHeaders(section)){
+				if(header.length() > longest[pos]){
+					longest[pos] = header.length();
+				}
+				++pos;
+			}
+			for(String[] values : res.getSectionFields(section)){
+				pos = 0;
+				for(String value : values){
+					if(value.length() > longest[pos]){
+						longest[pos] = value.length();
+					}
+					++pos;
+				}
+			}
+			
+			// now write the columns with the proper spacing.
+			pos = 0;
+			for(String header : res.getSectionHeaders(section)){
+				writer.write(header + numOfSpaces(longest[pos++]-header.length()) + "|");
+			}
+			writer.write("\r\n==============================\r\n");
+			for(String[] values : res.getSectionFields(section)){
+				pos = 0;
+				for(String value : values){
+					writer.write(value + numOfSpaces(longest[pos++]-value.length()) + "|");
+				}
+				writer.write("\r\n");
+			}
+		}
+		writer.flush();
+		writer.close();
+		
+		return true;
+	}
+	
+	private String numOfSpaces(int spaces){
+		StringBuffer buf = new StringBuffer();
+		for(int i = 0; i < spaces; ++i){
+			buf.append(" ");
+		}
+		return buf.toString();
+	}
 
 }

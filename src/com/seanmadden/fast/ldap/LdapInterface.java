@@ -87,4 +87,8 @@ public class LdapInterface {
 		return ctx;
 	}
 	
+	public String getAuthDN(){
+		return this.auth;
+	}
+	
 }

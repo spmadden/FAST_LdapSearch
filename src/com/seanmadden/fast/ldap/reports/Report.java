@@ -22,7 +22,6 @@
 */
 package com.seanmadden.fast.ldap.reports;
 
-import java.util.Collection;
 import java.util.Hashtable;
 
 
@@ -36,8 +35,8 @@ import org.apache.log4j.Logger;
 public abstract class Report {
 	
 		public static Logger logger = Logger.getLogger(Report.class);
-        
-        public Report(){};
+
+		public Report(){};
         
         /**
         * Executes the specified report
@@ -50,7 +49,7 @@ public abstract class Report {
         * 
         * @return
         */
-        public abstract Collection<ReportResult> getResult();
+        public abstract ReportResult getResult();
         
         /**
         * Returns the name of this report.
