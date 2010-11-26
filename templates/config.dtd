@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!ELEMENT configuration (Reports,Profiles) > 
+<!ELEMENT Reports (Report*)>
+<!ELEMENT Report (option*)>
+<!ATTLIST Report profile CDATA #IMPLIED>
+<!ATTLIST Report report CDATA #REQUIRED>
+<!ATTLIST option name CDATA #REQUIRED>
+<!ATTLIST option type CDATA #REQUIRED>
+<!ATTLIST option value CDATA #REQUIRED>
+<!ELEMENT option EMPTY>
+<!ELEMENT Profiles (Profile*)>
+<!ELEMENT Profile (LdapAuthString,LdapServerString,LdapGroupsLocation)>
+<!ATTLIST Profile name CDATA #IMPLIED>
+<!ELEMENT LdapAuthString (#PCDATA) >
+<!ELEMENT LdapGroupsLocation (#PCDATA) >
+<!ELEMENT LdapServerString (#PCDATA) >
