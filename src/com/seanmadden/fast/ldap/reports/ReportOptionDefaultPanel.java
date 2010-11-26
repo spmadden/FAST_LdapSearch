@@ -22,7 +22,7 @@
  */
 package com.seanmadden.fast.ldap.reports;
 
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
@@ -56,6 +56,7 @@ public class ReportOptionDefaultPanel extends JPanel implements ActionListener {
 	private class TableRow {
 		JComponent label;
 		JComponent edit;
+		String help;
 		String name;
 		String type;
 	}
@@ -73,6 +74,7 @@ public class ReportOptionDefaultPanel extends JPanel implements ActionListener {
 	 */
 	public ReportOptionDefaultPanel(Hashtable<String, ReportOption> config) {
 		this.config = config;
+		displayGUI();
 	}
 
 	/**
@@ -81,102 +83,169 @@ public class ReportOptionDefaultPanel extends JPanel implements ActionListener {
 	 * 
 	 */
 	protected void displayGUI() {
-		for(Entry<String, ReportOption> ro : config.entrySet()){
+		for (Entry<String, ReportOption> ro : config.entrySet()) {
 			ReportOption opt = ro.getValue();
-			if(opt.getType() == ReportOption.Type.String){
+			if (opt.getType() == ReportOption.Type.String) {
 				makeStringValue(opt);
-			}else if(opt.getType() == ReportOption.Type.Boolean){
+			} else if (opt.getType() == ReportOption.Type.Boolean) {
 				makeBooleanValue(opt);
-			}else if(opt.getType() == ReportOption.Type.Integer){
+			} else if (opt.getType() == ReportOption.Type.Integer) {
 				makeIntegerValue(opt);
 			}
 		}
 
-		this.setLayout(new GridLayout(components.size() + 1, 2));
+		ImageIcon icon = new ImageIcon(getClass().getResource("icons/help.png"));
+
+		SpringLayout l = new SpringLayout();
+		this.setLayout(l);
 		for (TableRow comp : components) {
+			if (!comp.help.equals("")) {
+				JLabel label = (JLabel) comp.label;
+				label.setIcon(icon);
+				label.setToolTipText(comp.help);
+			}
 			this.add(comp.label);
 			this.add(comp.edit);
 		}
-		JButton saveButton = new JButton("Save");
-		saveButton.addActionListener(this);
-		saveButton.setActionCommand("SaveXML");
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(this);
-		cancelButton.setActionCommand("CancelClose");
+		makeCompactGrid(this, components.size(), 2, 6, 6, 6, 6);
+	}
 
-		this.add(saveButton);
-		this.add(cancelButton);
+	private static SpringLayout.Constraints getConstraintsForCell(int row,
+			int col, Container parent, int cols) {
+		SpringLayout layout = (SpringLayout) parent.getLayout();
+		Component c = parent.getComponent(row * cols + col);
+		return layout.getConstraints(c);
+	}
+
+	public static void makeCompactGrid(Container parent, int rows, int cols,
+			int initialX, int initialY, int xPad, int yPad) {
+		SpringLayout layout;
+		try {
+			layout = (SpringLayout) parent.getLayout();
+		} catch (ClassCastException exc) {
+			System.err
+					.println("The first argument to makeCompactGrid must use SpringLayout.");
+			return;
+		}
+
+		// Align all cells in each column and make them the same width.
+		Spring x = Spring.constant(initialX);
+		for (int c = 0; c < cols; c++) {
+			Spring width = Spring.constant(0);
+			for (int r = 0; r < rows; r++) {
+				width = Spring.max(width,
+						getConstraintsForCell(r, c, parent, cols).getWidth());
+			}
+			for (int r = 0; r < rows; r++) {
+				SpringLayout.Constraints constraints = getConstraintsForCell(r,
+						c, parent, cols);
+				constraints.setX(x);
+				constraints.setWidth(width);
+			}
+			x = Spring.sum(x, Spring.sum(width, Spring.constant(xPad)));
+		}
+
+		// Align all cells in each row and make them the same height.
+		Spring y = Spring.constant(initialY);
+		for (int r = 0; r < rows; r++) {
+			Spring height = Spring.constant(0);
+			for (int c = 0; c < cols; c++) {
+				height = Spring.max(height,
+						getConstraintsForCell(r, c, parent, cols).getHeight());
+			}
+			for (int c = 0; c < cols; c++) {
+				SpringLayout.Constraints constraints = getConstraintsForCell(r,
+						c, parent, cols);
+				constraints.setY(y);
+				constraints.setHeight(height);
+			}
+			y = Spring.sum(y, Spring.sum(height, Spring.constant(yPad)));
+		}
+
+		// Set the parent's size.
+		SpringLayout.Constraints pCons = layout.getConstraints(parent);
+		pCons.setConstraint(SpringLayout.SOUTH, y);
+		pCons.setConstraint(SpringLayout.EAST, x);
 	}
 
 	private void makeIntegerValue(ReportOption ro) {
-		JTextField comp = new JTextField();
+		JTextField comp = new JTextField(20);
 		comp.setText(ro.getIntValue().toString());
 		comp.setActionCommand(ro.getName());
+		comp.setMinimumSize(new Dimension(100, 10));
 		JLabel label = new JLabel(ro.getDescription());
 
 		TableRow row = new TableRow();
 		row.edit = comp;
 		row.label = label;
+		row.help = ro.getHelp();
 		row.name = ro.getName();
 		row.type = "Integer";
 
-		components.add(row);		
+		components.add(row);
 	}
 
 	private void makeBooleanValue(ReportOption ro) {
 		JComboBox comp = new JComboBox(new String[] { "Yes", "No" });
 		comp.setActionCommand(ro.getName());
+		comp.setMinimumSize(new Dimension(100, 10));
 		JLabel label = new JLabel(ro.getDescription());
-
+		JLabel help = new JLabel();
+		if (!ro.getHelp().equals("")) {
+			help = new JLabel(ro.getHelp());
+		}
 		TableRow row = new TableRow();
 		row.edit = comp;
+		row.help = ro.getHelp();
 		row.label = label;
 		row.name = ro.getName();
 		row.type = "Boolean";
 
-		components.add(row);		
+		components.add(row);
 	}
 
 	private void makeStringValue(ReportOption ro) {
-		JTextField comp = new JTextField();
+		JTextField comp = new JTextField(20);
 		comp.setText(ro.getStrValue());
 		comp.setActionCommand(ro.getName());
+		comp.setMinimumSize(new Dimension(100, 10));
 		JLabel label = new JLabel(ro.getDescription());
+		JLabel help = new JLabel();
+		if (!ro.getHelp().equals("")) {
+			help = new JLabel(ro.getHelp());
+		}
 
 		TableRow row = new TableRow();
+		row.help = ro.getHelp();
 		row.label = label;
 		row.edit = comp;
 		row.name = ro.getName();
 		row.type = "String";
 
 		components.add(row);
-		
+
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
-		if (cmd.equals("SaveXML")) {
-			for (TableRow row : components) {
-				ReportOption ro = config.get(row.name);
-				if (row.type.equals("Integer")) {
-					JTextField field = (JTextField) row.edit;
-					try {
-						ro.setIntValue(Integer.valueOf(field
-								.getText()));
-					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(null, field.getText()
-								+ " is not an integer.", "Error",
-								JOptionPane.ERROR_MESSAGE);
-					}
-				} else if (row.type.equals("String")) {
-					JTextField field = (JTextField) row.edit;
-					ro.setStrValue(field.getText());
-				} else if(row.type.equals("Boolean")){
-					JComboBox field = (JComboBox) row.edit;
-					Boolean value = field.getSelectedItem().equals("Yes");
-					ro.setBoolValue(value);
+		for (TableRow row : components) {
+			ReportOption ro = config.get(row.name);
+			if (row.type.equals("Integer")) {
+				JTextField field = (JTextField) row.edit;
+				try {
+					ro.setIntValue(Integer.valueOf(field.getText()));
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, field.getText()
+							+ " is not an integer.", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
+			} else if (row.type.equals("String")) {
+				JTextField field = (JTextField) row.edit;
+				ro.setStrValue(field.getText());
+			} else if (row.type.equals("Boolean")) {
+				JComboBox field = (JComboBox) row.edit;
+				Boolean value = field.getSelectedItem().equals("Yes");
+				ro.setBoolValue(value);
 			}
-		} 
+		}
 	}
 }

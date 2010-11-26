@@ -40,11 +40,6 @@ public class Reports {
 	 */
 	private static Reports theReport = null;
 
-	/**
-	 * A list of all the available reports
-	 */
-	private Vector<Report> reports = new Vector<Report>();
-
 	private LdapInterface ldap;
 
 	/**
@@ -55,6 +50,7 @@ public class Reports {
 	}
 
 	public Collection<Report> getAllReports() {
+		Vector<Report> reports = new Vector<Report>();
 		Vector<String> reps = ClassFinder.findAllInterfaces(Report.class);
 		for (String r : reps) {
 			try {
@@ -67,7 +63,7 @@ public class Reports {
 				e.printStackTrace();
 			}
 		}
-		return this.reports;
+		return reports;
 	}
 
 	public void setLdapConnection(LdapInterface inter) {

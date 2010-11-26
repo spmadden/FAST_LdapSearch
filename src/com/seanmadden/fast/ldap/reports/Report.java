@@ -23,13 +23,10 @@
 package com.seanmadden.fast.ldap.reports;
 
 import java.util.Collection;
-import java.util.Vector;
+import java.util.Hashtable;
 
-import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
-
-import com.seanmadden.xmlconfiguration.XMLDataValue;
 
 /**
 * This interface represents a single report.
@@ -68,15 +65,12 @@ public abstract class Report {
         	return false;
         }
         
-        public Collection<ReportOption> getOptions(){
-        	return new Vector<ReportOption>();
+        public Hashtable<String, ReportOption> getOptions(){
+        	return new Hashtable<String, ReportOption>();
         }
         
         public String toString(){
         	return getName();
         }
 
-		public void populateOptionsPanel(JPanel optionsPanel) {
-			optionsPanel.setL
-		}
 }

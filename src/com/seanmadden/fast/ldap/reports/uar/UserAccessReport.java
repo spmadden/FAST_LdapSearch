@@ -24,8 +24,7 @@
  */
 package com.seanmadden.fast.ldap.reports.uar;
 
-import java.util.Collection;
-import java.util.Vector;
+import java.util.*;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -34,6 +33,8 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+
+import org.apache.log4j.Logger;
 
 import com.seanmadden.fast.ldap.*;
 import com.seanmadden.fast.ldap.reports.Report;
@@ -53,13 +54,27 @@ public class UserAccessReport extends Report {
 	private LdapInterface inter;
 	private User user = null;
 	private String entryDN = "";
-	
-	private Vector<ReportOption> options = new Vector<ReportOption>(){
+	private static Logger log = Logger.getLogger(UserAccessReport.class);
+
+	private Hashtable<String, ReportOption> options = new Hashtable<String, ReportOption>() {
 		private static final long serialVersionUID = 2631350783253544448L;
 		{
-			add(new ReportOption("CN", "Username", "The username to search for", ""));
+			put("CN", new ReportOption("CN", "Username",
+					"The username to search for", "spmfa"));
+			put("INC_PRINT", new ReportOption("INC_PRINT", "Include Printers",
+					"Include printer access in the report", true));
+			put("INC_SHARE", new ReportOption("INC_SHARE", "Include Shares",
+					"Include share access in the report", true));
+			put("INC_PC", new ReportOption("INC_PC", "Include PC",
+					"Include last-logon hostname", true));
+			put("INC_MAC", new ReportOption("INC_MAC", "Include MAC",
+					"Include last-logon MAC", true));
+			put("INC_IP", new ReportOption("INC_IP", "Include IP",
+					"Include last-logon IP", true));
+			put("RECURSE", new ReportOption("RECURSE", "Recurse groups",
+					"Include all parent's group accesses", true));
 		}
-		
+
 	};
 
 	public UserAccessReport() {
@@ -72,7 +87,7 @@ public class UserAccessReport extends Report {
 
 	/**
 	 * Returns the cannonical name of this report.
-	 *
+	 * 
 	 * @see com.seanmadden.fast.ldap.reports.Report#getName()
 	 * @return
 	 */
@@ -81,28 +96,29 @@ public class UserAccessReport extends Report {
 	}
 
 	/**
-	 * Returns whether or not this report has options.  In this case, returns 
+	 * Returns whether or not this report has options. In this case, returns
 	 * true.
-	 *
+	 * 
 	 * @see com.seanmadden.fast.ldap.reports.Report#hasOptions()
 	 * @return True.
 	 */
 	public boolean hasOptions() {
-		return options.size()>0;
+		return options.size() > 0;
 	}
 
 	/**
 	 * Returns a list of the available options for this report.
-	 *
+	 * 
 	 * @see com.seanmadden.fast.ldap.reports.Report#getOptions()
 	 * @return List of valid options for this report.
 	 */
 	@Override
-	public Collection<ReportOption> getOptions() {
+	public Hashtable<String, ReportOption> getOptions() {
 		return options;
 	}
 
 	public void execute() {
+		log.debug(options);
 		DirContext ctx = inter.getContext();
 
 		SearchControls sc = new SearchControls();
@@ -112,7 +128,8 @@ public class UserAccessReport extends Report {
 
 		try {
 			NamingEnumeration<SearchResult> answer = ctx.search(
-					"dc=finance,dc=rit,dc=edu", "cn=bpf*", sc);
+					"dc=finance,dc=rit,dc=edu", "cn="
+							+ options.get("CN").getStrValue(), sc);
 			while (answer.hasMore()) {
 				SearchResult sr = answer.next();
 				entryDN = sr.getNameInNamespace();
@@ -135,29 +152,36 @@ public class UserAccessReport extends Report {
 			u.setLastLogonIP((String) userAtts.get("userIP").get());
 			u.setLastLogonMac((String) userAtts.get("userMAC").get());
 
-			Attribute userPrinterAtts = userAtts.get("userPrinterMap");
-			if (userPrinterAtts != null) {
-				NamingEnumeration<?> userPrinters = userPrinterAtts.getAll();
-				while (userPrinters.hasMore()) {
-					u.addPrinter((String) userPrinters.next());
+			if (options.get("INC_PRINT").getBoolValue()) {
+				Attribute userPrinterAtts = userAtts.get("userPrinterMap");
+				if (userPrinterAtts != null) {
+					NamingEnumeration<?> userPrinters = userPrinterAtts
+							.getAll();
+					while (userPrinters.hasMore()) {
+						u.addPrinter((String) userPrinters.next());
+					}
 				}
 			}
 
-			Attribute userShareAtts = userAtts.get("userShareMap");
-			if (userShareAtts != null) {
-				NamingEnumeration<?> userShares = userShareAtts.getAll();
-				while (userShares.hasMore()) {
-					u.addShare((String) userShares.next());
+			if (options.get("INC_SHARE").getBoolValue()) {
+				Attribute userShareAtts = userAtts.get("userShareMap");
+				if (userShareAtts != null) {
+					NamingEnumeration<?> userShares = userShareAtts.getAll();
+					while (userShares.hasMore()) {
+						u.addShare((String) userShares.next());
+					}
 				}
 			}
 
-			NamingEnumeration<?> memberships = userAtts.get("memberOf")
-					.getAll();
-			while (memberships.hasMore()) {
-				String membership = (String) memberships.next();
-				System.out.println(membership);
-				Group g = makeGroup(membership, ctx);
-				u.addGroup(g);
+			if (options.get("RECURSE").getBoolValue()) {
+				NamingEnumeration<?> memberships = userAtts.get("memberOf")
+						.getAll();
+				while (memberships.hasMore()) {
+					String membership = (String) memberships.next();
+					System.out.println(membership);
+					Group g = makeGroup(membership, ctx);
+					u.addGroup(g);
+				}
 			}
 
 			user = u;
@@ -167,8 +191,7 @@ public class UserAccessReport extends Report {
 
 	}
 
-	public static Group makeGroup(String group, DirContext ctx)
-			throws NamingException {
+	public Group makeGroup(String group, DirContext ctx) throws NamingException {
 		Group g = new Group();
 		// lookup group information.
 		DirContext groupsContext = (LdapCtx) ctx.lookup(group);
@@ -180,20 +203,24 @@ public class UserAccessReport extends Report {
 		}
 		g.setDn((String) groupAttrs.get("distinguishedName").get());
 
-		Attribute groupShareAttrs = groupAttrs.get("groupShareMap");
-		if (groupShareAttrs != null) {
-			NamingEnumeration<?> shares = groupShareAttrs.getAll();
-			while (shares.hasMore()) {
-				g.addShare((String) shares.next());
+		if (options.get("INC_SHARE").getBoolValue()) {
+			Attribute groupShareAttrs = groupAttrs.get("groupShareMap");
+			if (groupShareAttrs != null) {
+				NamingEnumeration<?> shares = groupShareAttrs.getAll();
+				while (shares.hasMore()) {
+					g.addShare((String) shares.next());
+				}
 			}
 		}
 
-		Attribute printerAtts = groupAttrs.get("groupPrinterMap");
-		if (printerAtts != null) {
-			NamingEnumeration<?> printers = printerAtts.getAll();
+		if (options.get("INC_PRINT").getBoolValue()) {
+			Attribute printerAtts = groupAttrs.get("groupPrinterMap");
+			if (printerAtts != null) {
+				NamingEnumeration<?> printers = printerAtts.getAll();
 
-			while (printers.hasMore()) {
-				g.addPrinter((String) printers.next());
+				while (printers.hasMore()) {
+					g.addPrinter((String) printers.next());
+				}
 			}
 		}
 

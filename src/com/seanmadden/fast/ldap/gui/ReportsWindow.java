@@ -34,6 +34,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -44,6 +46,7 @@ import org.apache.log4j.Logger;
 
 import com.seanmadden.fast.ldap.reports.Report;
 import com.seanmadden.fast.ldap.reports.ReportOption;
+import com.seanmadden.fast.ldap.reports.ReportOptionDefaultPanel;
 
 /**
  * This class accepts a configuration object and allows the user to create, edit
@@ -90,11 +93,10 @@ public class ReportsWindow extends JFrame implements ActionListener,
 
 		optionsPanel = new JPanel();
 		optionsPanel.setSize(300, 400);
-		JScrollPane optionsScrollPane = new JScrollPane(optionsPanel);
 		optionsPanel.setLayout(new BorderLayout());
 		optionsPanel.add(new JLabel("Please select a report"),
 				BorderLayout.CENTER);
-		this.add(optionsScrollPane, BorderLayout.CENTER);
+		this.add(optionsPanel, BorderLayout.CENTER);
 
 		selectButton = new JButton("Execute");
 		selectButton.setActionCommand("OK");
@@ -103,14 +105,20 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		this.getRootPane().setDefaultButton(selectButton);
 
 		selectButton.setEnabled(false);
+		
+		JButton outputOptions = new JButton("Output");
+		outputOptions.setActionCommand("OUTPUT");
+		outputOptions.setMnemonic('O');
+		outputOptions.addActionListener(this);
 
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.setActionCommand("CANCEL");
 		cancelButton.setMnemonic('C');
 		cancelButton.addActionListener(this);
 
-		JPanel lowerButtonsPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+		JPanel lowerButtonsPanel = new JPanel(new GridLayout(1, 3, 10, 10));
 		lowerButtonsPanel.add(selectButton);
+		lowerButtonsPanel.add(outputOptions);
 		lowerButtonsPanel.add(cancelButton);
 		this.add(lowerButtonsPanel, BorderLayout.SOUTH);
 
@@ -124,6 +132,37 @@ public class ReportsWindow extends JFrame implements ActionListener,
 		this.setLocation(xpos, ypos);
 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.addWindowListener(new WindowListener() {
+			public void windowActivated(WindowEvent arg0) {
+			}
+
+			public void windowClosed(WindowEvent arg0) {
+				synchronized (ReportsWindow.this) {
+					ReportsWindow.this.notifyAll();
+				}
+			}
+
+			public void windowClosing(WindowEvent arg0) {
+
+			}
+
+			public void windowDeactivated(WindowEvent arg0) {
+
+			}
+
+			public void windowDeiconified(WindowEvent arg0) {
+
+			}
+
+			public void windowIconified(WindowEvent arg0) {
+
+			}
+
+			public void windowOpened(WindowEvent arg0) {
+
+			}
+
+		});
 	}
 
 	public synchronized Report getSelection() {
@@ -151,6 +190,8 @@ public class ReportsWindow extends JFrame implements ActionListener,
 				this.notifyAll();
 			}
 			this.dispose();
+		} else if (cmd.equals("OUTPUT")){
+			
 		}
 
 	}
@@ -163,18 +204,31 @@ public class ReportsWindow extends JFrame implements ActionListener,
 	public void valueChanged(ListSelectionEvent arg0) {
 		if (!arg0.getValueIsAdjusting()) {
 			selectButton.setEnabled((list.getSelectedIndex() != -1));
+			// Clean out the stale listeners.
+			for (ActionListener l : selectButton.getActionListeners()) {
+				selectButton.removeActionListener(l);
+			}
+			selectButton.addActionListener(this);
+
 			Report r = (Report) list.getSelectedValue();
-			optionsPanel.removeAll();
+			log.debug(r);
 			if (r.hasOptions()) {
-				r.populateOptionsPanel(optionsPanel);
+				log.debug(r.getOptions());
+				ReportOptionDefaultPanel panel = new ReportOptionDefaultPanel(
+						r.getOptions());
+				selectButton.addActionListener(panel);
+				optionsPanel.removeAll();
+				JScrollPane jsp = new JScrollPane(panel);
+				optionsPanel.add(jsp, BorderLayout.CENTER);
 			} else {
+				optionsPanel.removeAll();
 				optionsPanel.setLayout(new BorderLayout());
 				optionsPanel.add(new JLabel("No options for\r\n this report"),
 						BorderLayout.CENTER);
 			}
-			optionsPanel.invalidate();
-			optionsPanel.validate();
-			optionsPanel.repaint();
+			this.invalidate();
+			this.validate();
+			this.repaint();
 		}
 	}
 

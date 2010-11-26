@@ -252,7 +252,23 @@ public class Main {
 			if (report == null) {
 				return;
 			}
-			log.debug(report.getClass().getCanonicalName());
+			/*
+			 * Empty the profiles and load a clean copy - then save it back
+			 * to the file
+			 */
+			config.clearTree("Reports");
+			for (Report r : Reports.getInstance().getAllReports()) {
+				config.addProperty("Reports.Report(-1)[@report]", r.getClass().getCanonicalName());
+				config.addProperty("Reports.Report[@name]", "Standard");
+				for(ReportOption ro: r.getOptions().values()){
+					config.addProperty("Reports.Report.option(-1)[@name]", ro.getName());
+					config.addProperty("Reports.Report.option[@type]", ro.getType());
+					config.addProperty("Reports.Report.option[@value]", ro.getStrValue());
+				}
+			}
+			config.save(configurationFile);
+			
+			report.execute();
 
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();

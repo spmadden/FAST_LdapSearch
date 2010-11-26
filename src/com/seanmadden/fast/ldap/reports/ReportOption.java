@@ -53,8 +53,7 @@ public class ReportOption {
 		this.name = name;
 		this.description = description;
 		this.help = help;
-		this.strValue = strValue;
-		this.type = Type.String;
+		setStrValue(strValue);
 	}
 
 	public ReportOption(String name, String description, String help,
@@ -62,8 +61,7 @@ public class ReportOption {
 		this.name = name;
 		this.description = description;
 		this.help = help;
-		this.intValue = intValue;
-		this.type = Type.Integer;
+		setIntValue(intValue);
 	}
 
 	public ReportOption(String name, String description, String help,
@@ -71,8 +69,7 @@ public class ReportOption {
 		this.name = name;
 		this.description = description;
 		this.help = help;
-		this.boolValue = boolValue;
-		this.type = Type.Boolean;
+		setBoolValue(boolValue);
 	}
 
 	/**
@@ -81,22 +78,8 @@ public class ReportOption {
 	 * @see java.lang.Object#hashCode()
 	 * @return
 	 */
-	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((boolValue == null) ? 0 : boolValue.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((help == null) ? 0 : help.hashCode());
-		result = prime * result
-				+ ((intValue == null) ? 0 : intValue.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((strValue == null) ? 0 : strValue.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
+		return name.hashCode();
 	}
 
 	/**
@@ -322,6 +305,7 @@ public class ReportOption {
 	public void setIntValue(Integer intValue) {
 		this.type = Type.Integer;
 		this.intValue = intValue;
+		this.strValue = intValue.toString();
 	}
 
 	/**
@@ -341,6 +325,7 @@ public class ReportOption {
 	public void setBoolValue(Boolean boolValue) {
 		this.type = Type.Boolean;
 		this.boolValue = boolValue;
+		this.strValue = (boolValue)?"TRUE":"FALSE";
 	}
 	
 }
